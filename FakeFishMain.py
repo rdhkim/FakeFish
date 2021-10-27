@@ -20,7 +20,7 @@ This wlil be called exactly once in the main.
 def loadImages():
     pieces = ["bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR"]
     for piece in pieces:
-        IMAGES[piece] = p.transform.smoothscale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.smoothscale(p.image.load("images/" + piece + ".png").convert_alpha(), (SQ_SIZE, SQ_SIZE))
         # we can now retrieve images by key search in our dictonary 'IMAGES["wP"]'
 
 """
@@ -34,6 +34,9 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("White"))
     gs = ChessEngine.GameState()
+    validMoves = gs.getValidMoves()
+    moveMade = False # flag variable for when a move is made
+
     loadImages() #only do this once, before the while loop
     running = True
     sqSelected = () # no Square is selected, keep track of last click of user (tuple (row, col))
@@ -42,6 +45,7 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() #(x,y) position of mouse
                 col = location[0]//SQ_SIZE 
@@ -54,17 +58,30 @@ def main():
                     playerClicks.append(sqSelected) #append for both first and second clicks
                 if len(playerClicks) == 2: # after second click
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
-                    gs.makeMove(move)
+                    # print(move.getChessNotation())
+                    if move in validMoves:
+                        gs.makeMove(move)
+                        moveMade = True
                     sqSelected = () # reset user clicks
                     playerClicks = []
+            # Key handlers
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z: #undo when Z is pressed
+                    gs.undoMove()
+                    moveMade = True
 
-            drawGameState(screen, gs) 
-            clock.tick(MAX_FPS) 
-            p.display.flip() 
+        if moveMade:
+            validMoves = gs.getValidMoves()
+            moveMade = False
+
+        drawGameState(screen, gs) 
+        clock.tick(MAX_FPS) 
+        p.display.flip() 
+
 """
 Responsible for all the graphics within a current game state.
 """
+
 def drawGameState(screen, gs):
     drawBoard(screen) #draw squares on the board
     #add piece highlighting or move suggestions
@@ -73,6 +90,7 @@ def drawGameState(screen, gs):
 """
 Draw the squares on the board. The top left square is always light
 """
+
 def drawBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
     for r in range(DIMENSION):
