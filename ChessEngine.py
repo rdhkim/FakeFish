@@ -12,7 +12,7 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "bP", "--", "--", "--", "--", "--", "--"],
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
@@ -52,16 +52,16 @@ class GameState():
     """
     
     def getAllPossibleMoves(self):
-        moves = [Move((6, 4), (4, 4), self.board)]
+        moves = []
         for r in range(len(self.board)): # number of rows
             for c in range(len(self.board[r])): # number of cols in given row
-                turn = self.board[r][c][0]
-            if (turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
-                piece = self.board[r][c][1]
-                if piece == 'p':
-                    self.getPawnMoves(r, c, moves)
-                elif piece == 'R':
-                    self.getRookMoves(r, c, moves)
+                turn = self.board[r][c][0] # checks color of piece (first value of the square "w" or "b")
+                if (turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove): # need to check whose turn it is to generate valid moves accordingly
+                    piece = self.board[r][c][1] # type of piece (pawn, rook, bishop, etc); denoted by "p", "R", "B", etc
+                    if piece == 'P':
+                        self.getPawnMoves(r, c, moves)
+                    elif piece == 'R':
+                        self.getRookMoves(r, c, moves)
         return moves    
 
     """
@@ -69,8 +69,18 @@ class GameState():
     """
 
     def getPawnMoves(self, r, c, moves):
-        pass
-
+        if self.whiteToMove: # wite pawn move
+            if self.board[r-1][c] == "--": # 1 square pawn advance
+                moves.append(Move((r, c), (r-1, c), self.board))
+                if r == 6 and self.board[r-2][c] == "--": # 2 square move is possible
+                    moves.append(Move((r, c), (r-2, c), self.board))
+            if c-1 >= 0: # captures to left
+                if self.board[r-1][c-1][0] == "b": # enemy piece avaliable to capture
+                    moves.append(Move((r, c), (r-1, c-1), self.board))
+            if c+1 <= 7: # captures to right
+                if self.board[r-1][c+1][0] == "b":
+                    moves.append(Move((r, c), (r-1, c+1), self.board))
+    
     """
     Get all the rook moves for the rook located at row, col and add these moves to the list
     """
