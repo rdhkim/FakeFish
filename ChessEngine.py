@@ -126,8 +126,8 @@ class GameState():
         allyColor = "w" if self.whiteToMove else "b"
         for d in directions:
             for i in range(1, 8):
-                endRow = r + d[0] * i
-                endCol = c + d[1] * i
+                endRow = r + d[0] 
+                endCol = c + d[1]
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
                     endPiece = self.board[endRow][endCol]
                     if endPiece[0] != allyColor: 
